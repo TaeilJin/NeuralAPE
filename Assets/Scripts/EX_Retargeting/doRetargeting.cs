@@ -24,9 +24,12 @@ public class doRetargeting : playEnvMotion
 		return quat_rH;
 	}
 
+
+	/*
+	 you should define those child functions
+	 */
 	protected override void Setup_Child()
     {
-		
     }
     protected override void Feed_Child()
     {
@@ -58,8 +61,9 @@ public class doRetargeting : playEnvMotion
 			sb_record.Clear();
 
 		}
-    }
 
+		//
+    }
 	protected override void Read_Child()
 	{
 		if (b_connect && _helloRequester.bool_SendComplete == true && _helloRequester.bool_RecvComplete == true)
@@ -68,7 +72,12 @@ public class doRetargeting : playEnvMotion
 			string message = _helloRequester.DataPostProcessing();//
 			io_class.ImportConnectionData(message, _actor_target, start_root_frame,io_class.scale);
 		}
+		//
 	}
+	protected override void OnRender_Child()
+    {
+
+    }
 	//
 	[SerializeField] private Actor ActorR = null;
 	public void SetTargetCharacter(Actor character)
@@ -88,14 +97,15 @@ public class doRetargeting : playEnvMotion
 		}
 	}
 
-	[CustomEditor(typeof(doRetargeting))]
+	[CustomEditor(typeof(doRetargeting),true)]
     public class doRetargeting_Editor : playEnvMotion_Editor
     {
 
         public doRetargeting Target_R;
         private bool ShowA;
+		float scale_tar;
 
-        public new void Awake()
+		public new void Awake()
         {
             base.Awake();
 			Target_R = (doRetargeting)target;
@@ -122,7 +132,7 @@ public class doRetargeting : playEnvMotion
 				Target_R.srcTxtFileName = EditorGUILayout.TextField("src MWTxt", Target_R.srcTxtFileName);
 				if (Utility.GUIButton("write src MWTxt", UltiDraw.DarkGrey, UltiDraw.White))
 				{
-					genMBSTxtFile(Target_R.srcTxtFileName, Target._actor);
+					genMBSTxtFile(Target_R.srcTxtFileName, Target._actor , 0.0f);
 				}
 			}
 
@@ -131,11 +141,12 @@ public class doRetargeting : playEnvMotion
 			using (new EditorGUILayout.VerticalScope("Box"))
 			{
 				Target_R.SetTargetCharacter((Actor)EditorGUILayout.ObjectField("Target Character", Target_R._actor_target, typeof(Actor), true));
+				scale_tar = (float)EditorGUILayout.FloatField("scale", scale_tar);
 
 				Target_R.tarTxtFileName = EditorGUILayout.TextField("tar MWTxt", Target_R.tarTxtFileName);
 				if (Utility.GUIButton("write tar MWTxt", UltiDraw.DarkGrey, UltiDraw.White))
 				{
-					genMBSTxtFile(Target_R.tarTxtFileName, Target_R._actor_target);
+					genMBSTxtFile(Target_R.tarTxtFileName, Target_R._actor_target, scale_tar);
 				}
 			}
 
@@ -154,7 +165,7 @@ public class doRetargeting : playEnvMotion
 		}
 		
 
-		public void genMBSTxtFile(string i_fileName, Actor i_actor)
+		public void genMBSTxtFile(string i_fileName, Actor i_actor, float scale)
         {
 			string foldername = base.Target.directoryPath;
 			Target_R.File_record = Target_R._writer_class.CreateFile(foldername, i_fileName, false, ".txt");
@@ -166,7 +177,7 @@ public class doRetargeting : playEnvMotion
 
 			for (int i = 0; i < i_actor.Bones.Length; i++)
 			{
-				Vector3 pos = i_actor.Bones[i].Transform.localPosition;
+				Vector3 pos = i_actor.Bones[i].Transform.localPosition * scale;
 				pos.Set(-1 * pos.x, pos.y, pos.z); // to MotionWorks (righthand)
 
 				Quaternion quat = i_actor.Bones[i].Transform.localRotation;
@@ -208,49 +219,6 @@ public class doRetargeting : playEnvMotion
 
 			
 		}
-
-
-		//private void InspectSkeleton(Transform transform, int indent)
-		//{
-		//	Actor.Bone bone = Target._actor.FindBone(transform.name);
-		//	Utility.SetGUIColor(bone == null ? UltiDraw.LightGrey : UltiDraw.Mustard);
-		//	using (new EditorGUILayout.HorizontalScope("Box"))
-		//	{
-		//		Utility.ResetGUIColor();
-		//		EditorGUILayout.BeginHorizontal();
-		//		EditorGUILayout.LabelField("|", GUILayout.Width(20f));
-		//		EditorGUILayout.LabelField(transform.name + " " + (bone == null ? string.Empty : "(" + bone.Index.ToString() + ")" + " " + "(" + bone.GetLength() + ")"), GUILayout.Width(250f), GUILayout.Height(20f));
-
-
-		//		//EditorGUILayout.LabelField("-", GUILayout.Width(20f));
-		//		//EditorGUILayout.LabelField(transform.name + " " + (bone == null ? string.Empty : "(" + bone.Index.ToString() + ")" + " " + "(" + bone.GetLength() + ")"), GUILayout.Width(250f), GUILayout.Height(20f));
-		//		//GUILayout.FlexibleSpace();
-		//		//if (Utility.GUIButton("Bone", bone == null ? UltiDraw.White : UltiDraw.DarkGrey, bone == null ? UltiDraw.DarkGrey : UltiDraw.White))
-		//		//{
-		//		//	Transform[] bones = new Transform[Target.Bones.Length];
-		//		//	for (int i = 0; i < bones.Length; i++)
-		//		//	{
-		//		//		bones[i] = Target.Bones[i].Transform;
-		//		//	}
-		//		//	if (bone == null)
-		//		//	{
-		//		//		ArrayExtensions.Add(ref bones, transform);
-		//		//		Target.ExtractSkeleton(bones);
-		//		//	}
-		//		//	else
-		//		//	{
-		//		//		ArrayExtensions.Remove(ref bones, transform);
-		//		//		Target.ExtractSkeleton(bones);
-		//		//	}
-		//		//}
-		//		EditorGUILayout.EndHorizontal();
-		//	}
-		//	for (int i = 0; i < Target._actor.Bones.Length; i++)
-		//	{
-		//		InspectSkeleton(Target._actor.Bones[i].GetChild(i).Transform, indent + 1);
-		//	}
-		//}
-
 
 	}
 

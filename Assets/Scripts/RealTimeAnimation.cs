@@ -35,7 +35,7 @@ public abstract class RealTimeAnimation : MonoBehaviour {
 
     void FixedUpdate() {
 		//Utility.SetFPS(Mathf.RoundToInt(GetFramerate()));
-		Time.fixedDeltaTime = (float)1 / 60;
+		Time.fixedDeltaTime = (float)1 / 26;
 
 		System.DateTime t1 = Utility.GetTimestamp();
 

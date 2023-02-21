@@ -365,9 +365,9 @@ public class ImporterClass
                 
                     //
                     Debug.Log(data.Framerate + " FPS ");
-                    if (data.Framerate == 120)
+                    if (data.Framerate == 60)
                     {
-                        int width = Mathf.RoundToInt(data.Framerate / 30);
+                        int width = Mathf.RoundToInt(data.Framerate / 26);
                         int totalframes = Mathf.RoundToInt(data.GetTotalFrames() / width);
                         Motion = new Matrix4x4[totalframes][];
                         for (int k = 0; k < totalframes; k++)

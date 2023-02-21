@@ -146,16 +146,16 @@ public abstract class playEnvMotion : RealTimeAnimation
     float[][] data_file; // Frame, goal features
     int startFrame = 1;
 
-    bool b_data_exist = false;
+    public bool b_data_exist = false;
     bool b_goal_data_exist = false;
     bool b_output_data_exist = false;
-    bool b_record = false;
+    public bool b_record = false;
     int b_upper_cond = 0;
 
     bool b_exp = false;
 
     private StringBuilder sb_record;
-    private StreamWriter File_record;
+    public StreamWriter File_record;
     private StreamWriter File_record_prob;
 
     protected Matrix4x4[] joint_mat_offset = new Matrix4x4[0];
@@ -249,27 +249,7 @@ public abstract class playEnvMotion : RealTimeAnimation
     }
 
     //--- Sequence
-    public void event_WriteGoalData()
-    {
-        string foldername = directoryPath;
-        string name = "SeqDemo";
-
-        File_record = CreateFile(foldername, name, true, ".txt");
-
-        b_record = true;
-        b_play = true;
-        b_output_data_exist = false;
-
-        FileIndex = 0;
-        FileOrder = findOrder(Files, FileIndex);
-        Frame = 1;
-
-        b_upper_cond = Files[FileOrder].b_uppercond;
-        start_root_frame = Files[FileOrder].RootTr[Frame];
-        io_class.WriteMatData(foldername, name + "_start_root", start_root_frame);
-        Debug.Log("let's b_upper_cond " + b_upper_cond);
-    }
-
+   
     /*--- Event Load Function */
 
     //--- Current
@@ -341,21 +321,21 @@ public abstract class playEnvMotion : RealTimeAnimation
 
 
     /* Update Function */
-    private void update_pose(int index)
+    public void update_pose(int index)
     {
         //Debug.Log("Frame " + index + "/" + io_class.Motion.GetLength(0));
         for (int j = 0; j < _actor.Bones.Length; j++)
             _actor.Bones[j].Transform.SetPositionAndRotation(io_class.Motion[index][j].GetPosition(), io_class.Motion[index][j].GetRotation());
 
     }
-    private void update_pose(int index, Matrix4x4[][] _motion)
+    public void update_pose(int index, Matrix4x4[][] _motion)
     {
         //Debug.Log("Frame " + index + "/" + _motion.GetLength(0));
         for (int j = 0; j < _actor.Bones.Length; j++)
             _actor.Bones[j].Transform.SetPositionAndRotation(_motion[index][j].GetPosition(), _motion[index][j].GetRotation());
 
     }
-    private void update_pose(int index, Matrix4x4[][] _motion, Matrix4x4[] _root)
+    public void update_pose(int index, Matrix4x4[][] _motion, Matrix4x4[] _root)
     {
         //Debug.Log("Frame " + index + "/" + _motion.GetLength(0));
         for (int j = 0; j < _actor.Bones.Length; j++)
@@ -365,7 +345,7 @@ public abstract class playEnvMotion : RealTimeAnimation
         }
 
     }
-    private void update_singlepose(Matrix4x4[] _pose)
+    public void update_singlepose(Matrix4x4[] _pose)
     {
         //Debug.Log("Frame " + index + "/" + _motion.GetLength(0));
         for (int j = 0; j < _actor.Bones.Length; j++)
@@ -449,7 +429,10 @@ public abstract class playEnvMotion : RealTimeAnimation
         Environment = new CylinderMap(size, (int)resolution, (int)layers, false);
 
         b_play = false;
+        b_record = false;
         Debug.Log("b_play " + b_play + " b_recrod " + b_record);
+
+        Setup_Child();
     }
 
     protected abstract void Feed_Child();
@@ -527,7 +510,10 @@ public abstract class playEnvMotion : RealTimeAnimation
                 Feed_Child(); // do Something
             }
         }
-       
+        else
+        {
+            Feed_Child();
+        }
     }
 
     protected abstract void Read_Child();
@@ -541,12 +527,15 @@ public abstract class playEnvMotion : RealTimeAnimation
 
     }
 
+    protected abstract void OnRender_Child();
     protected override void OnRenderObjectDerived()
     {
         if (b_visualize)
         {
             if (b_data_exist || b_output_data_exist)
             {
+                int framewidth = 30;
+
                 UltiDraw.Begin();
                 //UltiDraw.DrawWiredSphere(Files[FileOrder].StartRootMat.GetPosition(), Files[FileOrder].StartRootMat.rotation, 0.1f, UltiDraw.DarkRed, UltiDraw.Black);
                 //UltiDraw.DrawTranslateGizmo(Files[FileOrder].StartRootMat.GetPosition(), Files[FileOrder].StartRootMat.rotation, 0.1f);
@@ -554,13 +543,6 @@ public abstract class playEnvMotion : RealTimeAnimation
                 //UltiDraw.DrawWiredSphere(Files[FileOrder].EndRootMat.GetPosition(), Files[FileOrder].EndRootMat.rotation, 0.1f, UltiDraw.DarkRed, UltiDraw.Black);
                 //UltiDraw.DrawTranslateGizmo(Files[FileOrder].EndRootMat.GetPosition(), Files[FileOrder].EndRootMat.rotation, 0.1f);
 
-                int framewidth = 30;
-                for (int i = 0; i < Mathf.RoundToInt(Files[FileOrder].RootTr.Length / framewidth); i++)
-                {
-                    UltiDraw.DrawWiredSphere(Files[FileOrder].RootTr[framewidth * i].GetPosition(), Files[FileOrder].RootTr[framewidth * i].rotation, 0.1f, UltiDraw.Orange, UltiDraw.Black);
-                    UltiDraw.DrawTranslateGizmo(Files[FileOrder].RootTr[framewidth * i].GetPosition(), Files[FileOrder].RootTr[framewidth * i].rotation, 0.1f);
-                    //UltiDraw.DrawTranslateGizmo(Files[FileOrder].Motion[framewidth * i][5].GetPosition(), Files[FileOrder].Motion[framewidth * i][5].rotation, 0.1f);
-                }
                 // start 
                 UltiDraw.DrawWiredSphere(Files[FileOrder].Motion[0][5].GetPosition(), Files[FileOrder].Motion[0][5].rotation, 0.1f, UltiDraw.Red, UltiDraw.Black);
                 UltiDraw.DrawWiredSphere(Files[FileOrder].Motion[0][9].GetPosition(), Files[FileOrder].Motion[0][9].rotation, 0.1f, UltiDraw.Red, UltiDraw.Black);
@@ -584,12 +566,15 @@ public abstract class playEnvMotion : RealTimeAnimation
                 UltiDraw.DrawTranslateGizmo(Files[FileOrder].RootTr.Last<Matrix4x4>().GetPosition(), Files[FileOrder].RootTr.Last<Matrix4x4>().rotation, 0.1f);
 
                 UltiDraw.End();
+                
+                Environment.Draw(Color.green, true, false);//Draw_Dynamic_Env(Environment.Points, Environment.Occupancies)
 
                 if (b_draw_total)
                 {
                     if (Files.Length > 1)
                     {
                         UltiDraw.Begin();
+                        
                         for (int order = 0; order < Files.Length - 1; order++)
                         {
                             int id_order = findOrder(Files, order);
@@ -612,18 +597,18 @@ public abstract class playEnvMotion : RealTimeAnimation
                         }
                         UltiDraw.End();
                     }
+                    else
+                    {
+                        UltiDraw.Begin();
+                        for (int i = 0; i < Mathf.RoundToInt(Files[FileOrder].RootTr.Length / framewidth); i++)
+                        {
+                            UltiDraw.DrawWiredSphere(Files[FileOrder].RootTr[framewidth * i].GetPosition(), Files[FileOrder].RootTr[framewidth * i].rotation, 0.1f, UltiDraw.Orange, UltiDraw.Black);
+                            UltiDraw.DrawTranslateGizmo(Files[FileOrder].RootTr[framewidth * i].GetPosition(), Files[FileOrder].RootTr[framewidth * i].rotation, 0.1f);
+                            //UltiDraw.DrawTranslateGizmo(Files[FileOrder].Motion[framewidth * i][5].GetPosition(), Files[FileOrder].Motion[framewidth * i][5].rotation, 0.1f);
+                        }
+                        UltiDraw.End();
+                    }
                 }
-            }
-
-            if (b_goal_data_exist || b_record)
-            {
-                Environment.Draw(Color.green, true, false);//Draw_Dynamic_Env(Environment.Points, Environment.Occupancies)
-            }
-
-            if (b_exp)
-            {
-                //exp_utils.DerivedDraw(Frame);
-
             }
 
             if (b_probability)
@@ -631,6 +616,8 @@ public abstract class playEnvMotion : RealTimeAnimation
                 //Debug.Log("values" + cur_prob_value);
                 DrawGraph(cur_prob_value);
             }
+
+            OnRender_Child();
         }
 
     }
@@ -718,6 +705,9 @@ public abstract class playEnvMotion : RealTimeAnimation
             //base.OnInspectorGUI();
             Undo.RecordObject(Target, Target.name);
             Inspector();
+
+            EditorGUILayout.HelpBox("Animation: " + 1000f * Target.AnimationTime + "ms", MessageType.None);
+
             if (GUI.changed)
             {
                 EditorUtility.SetDirty(Target);

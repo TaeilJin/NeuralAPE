@@ -444,8 +444,11 @@ public class EnvMoData : ScriptableObject {
 				SetGameObject((GameObject)EditorGUILayout.ObjectField("Chair", Chair, typeof(GameObject), true), true);
                 // desk object
                 SetGameObject((GameObject)EditorGUILayout.ObjectField("Desk", Desk, typeof(GameObject), true), false);
+				// upperbody
+				EditorGUILayout.LabelField("bool upper cond", GUILayout.Width(100f));
+				b_uppercond = EditorGUILayout.IntField(b_uppercond, GUILayout.Width(100f));
 
-                if (Chair != null && Desk != null)
+				if (Chair != null && Desk != null)
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField("y_offset_f", GUILayout.Width(100f));
@@ -498,8 +501,6 @@ public class EnvMoData : ScriptableObject {
                     // 
                     EditorGUILayout.BeginHorizontal();
                     Utility.SetGUIColor(UltiDraw.White);
-                    EditorGUILayout.LabelField("bool upper cond", GUILayout.Width(100f));
-                    b_uppercond = EditorGUILayout.IntField(b_uppercond, GUILayout.Width(100f));
                     EditorGUILayout.LabelField("y_offset_h", GUILayout.Width(100f));
                     y_offset_h = EditorGUILayout.FloatField(y_offset_h, GUILayout.Width(50f));
                     EditorGUILayout.EndHorizontal();
